@@ -18,7 +18,8 @@ import XCTest
         }
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .nonPersistent()
-        installBridge(in: configuration.userContentController, handler: BridgeHandler(adminURL: url) { _ in })
+        var calls: [BridgeCall] = []
+        installBridge(in: configuration.userContentController, handler: BridgeHandler(adminURL: url) { calls.append($0) })
         let webView = CompanionWebView(frame: NSRect(x: 0, y: 0, width: 1100, height: 760), configuration: configuration)
         let loaded = expectation(description: "loaded")
         let delegate = Loaded(loaded)
@@ -34,6 +35,19 @@ import XCTest
         XCTAssertEqual(app, true)
         let frozen = try await webView.evaluateJavaScript("(() => { try { window.siteioCompanion.present = false } catch (e) {} ; return window.siteioCompanion.present })()") as? Bool
         XCTAssertEqual(frozen, true)
+
+        // The page's own mousedown handler: empty sidebar chrome asks the app to move the window,
+        // a control (a sidebar link) keeps its click.
+        let press = "(sel) => document.querySelector(sel).dispatchEvent(new MouseEvent('mousedown', { button: 0, detail: 1, bubbles: true }))"
+        _ = try await webView.evaluateJavaScript("(\(press))('.tabs a')")
+        try await Task.sleep(for: .milliseconds(300))
+        XCTAssertEqual(calls, [])
+        _ = try await webView.evaluateJavaScript("(\(press))('.sidebar')")
+        try await Task.sleep(for: .milliseconds(300))
+        XCTAssertEqual(calls, [.dragWindow])
+        _ = try await webView.evaluateJavaScript("(\(press))('.pane-head')")
+        try await Task.sleep(for: .milliseconds(300))
+        XCTAssertEqual(calls, [.dragWindow, .dragWindow])
 
         // A picture of the page as the window shows it, in the (sandboxed) temporary directory.
         let image = try await webView.takeSnapshot(configuration: nil)
