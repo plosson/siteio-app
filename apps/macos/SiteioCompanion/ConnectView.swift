@@ -36,7 +36,8 @@ struct ConnectView: View {
                     .focused($focused)
                     .onSubmit(connect)
                     .onChange(of: address) { invalid = false }
-                Text(invalid ? "Enter a domain, such as example.com or https://api.example.com." : "The admin is at https://api.<domain>/ui.")
+                // Verbatim: a string literal would be read as Markdown and its URLs turned into links.
+                Text(verbatim: invalid ? "Enter a domain, such as example.com or https://api.example.com." : "The admin is at https://api.<domain>/ui.")
                     .font(.system(size: 11.5, weight: invalid ? .semibold : .regular))
                     .foregroundStyle(invalid ? Theme.bad : Theme.muted)
                 Button(action: connect) {
@@ -45,7 +46,6 @@ struct ConnectView: View {
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .keyboardShortcut(.defaultAction)
-                .disabled(address.trimmingCharacters(in: .whitespaces).isEmpty)
                 .padding(.top, 10)
             }
             .padding(24)
