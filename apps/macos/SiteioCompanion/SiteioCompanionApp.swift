@@ -46,17 +46,22 @@ struct SiteioCompanionApp: App {
 }
 
 /// The window: the connect screen, or the server's admin page up to the top of the
-/// window, under the transparent title bar (the page leaves room for its buttons).
+/// window, under the transparent title bar (the page leaves room for its buttons),
+/// with the footer under it, as AgentIO's.
 struct RootView: View {
     let model: AppModel
 
     var body: some View {
         Group {
-            if let url = model.adminURL {
-                AdminWebView(url: url, reloadToken: model.reloadToken)
-                    .id(url)
-                    .ignoresSafeArea(edges: .top)
-                    .frame(minWidth: 900, minHeight: 640)
+            if let server = model.selected, !model.showsConnect {
+                VStack(spacing: 0) {
+                    AdminWebView(url: server.launchURL, reloadToken: model.reloadToken)
+                        .id(server.id)
+                        .ignoresSafeArea(edges: .top)
+                    ServerFooter(model: model)
+                }
+                .frame(minWidth: 900, minHeight: 640)
+                .task(id: server.id) { await model.loadVersions() }
             } else {
                 ConnectView(model: model)
                     .ignoresSafeArea()
@@ -65,24 +70,36 @@ struct RootView: View {
         }
         .background(Theme.bg, ignoresSafeAreaEdges: .all)
         .navigationTitle(model.windowTitle)
+        // A `siteio login` in the terminal shows up when you come back to the app.
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            model.refreshServers()
+        }
     }
 }
 
-/// The Server menu.
+/// The Server menu: the servers, then the shown one's actions.
 struct ServerCommands: Commands {
     let model: AppModel
 
     var body: some Commands {
         CommandMenu("Server") {
+            ServerMenuItems(model: model)
+            Divider()
             Button("Reload") { model.reload() }
                 .keyboardShortcut("r")
-                .disabled(model.adminURL == nil)
-            Button("Open in Browser") { model.adminURL.map { _ = NSWorkspace.shared.open($0) } }
+                .disabled(model.selected == nil || model.showsConnect)
+            Button("Open in Browser") { model.selected.map { _ = NSWorkspace.shared.open($0.adminURL) } }
                 .keyboardShortcut("o", modifiers: [.command, .shift])
-                .disabled(model.adminURL == nil)
+                .disabled(model.selected == nil)
             Divider()
-            Button("Switch Server…") { model.switchServer() }
-                .disabled(model.adminURL == nil)
+            if let server = model.selected, server.cliKey != nil, !server.addedInApp {
+                // The CLI's servers come from its config: `siteio logout` removes them.
+                Button("Remove \(server.name)") {}
+                    .disabled(true)
+                    .help("Logged in with the siteio CLI: run siteio logout \(server.name)")
+            } else if let server = model.selected {
+                Button("Remove \(server.name)") { model.remove(server.id) }
+            }
         }
     }
 }
