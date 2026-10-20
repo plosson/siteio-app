@@ -1,0 +1,65 @@
+# Generates SiteioCompanion.xcodeproj (not committed): run `xcodegen generate`.
+name: SiteioCompanion
+options:
+  bundleIdPrefix: com.plosson
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    # Ad-hoc ("Sign to Run Locally") for local builds.
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGN_STYLE: Manual
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+targets:
+  SiteioCompanion:
+    type: application
+    platform: macOS
+    sources: [SiteioCompanion]
+    info:
+      path: SiteioCompanion/Info.plist
+      properties:
+        CFBundleDisplayName: siteio
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSApplicationCategoryType: public.app-category.developer-tools
+        NSHumanReadableCopyright: Copyright © Pierre A. Losson
+        NSAppTransportSecurity:
+          # Dev agents on http://127.0.0.1 / localhost (Debug builds only accept them).
+          NSAllowsLocalNetworking: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.plosson.siteio-companion
+        PRODUCT_NAME: siteio
+        MARKETING_VERSION: 0.1.0
+        CURRENT_PROJECT_VERSION: 1
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ENABLE_HARDENED_RUNTIME: YES
+        ENABLE_APP_SANDBOX: YES
+        ENABLE_OUTGOING_NETWORK_CONNECTIONS: YES
+  SiteioCompanionTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources: [SiteioCompanionTests]
+    dependencies:
+      - target: SiteioCompanion
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        # The app's product is "siteio", not the target's name.
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/siteio.app/Contents/MacOS/siteio
+        BUNDLE_LOADER: $(TEST_HOST)
+schemes:
+  SiteioCompanion:
+    build:
+      targets:
+        SiteioCompanion: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets: [SiteioCompanionTests]
+    archive:
+      config: Release

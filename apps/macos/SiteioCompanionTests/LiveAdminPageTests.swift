@@ -1,0 +1,45 @@
+import AppKit
+import WebKit
+import XCTest
+@testable import siteio
+
+/// Against a running siteio agent, opt in: `TEST_RUNNER_SITEIO_DEV_URL=http://127.0.0.1:3000/ui?key=<api key>`
+/// (xcodebuild passes `TEST_RUNNER_*` to the tests). Skipped otherwise.
+@MainActor final class LiveAdminPageTests: XCTestCase {
+    private final class Loaded: NSObject, WKNavigationDelegate {
+        let done: XCTestExpectation
+        init(_ done: XCTestExpectation) { self.done = done }
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) { done.fulfill() }
+    }
+
+    func testTheAdminPageSeesTheBridgeAndLaysItselfOutForTheWindow() async throws {
+        guard let raw = ProcessInfo.processInfo.environment["SITEIO_DEV_URL"], let url = URL(string: raw) else {
+            throw XCTSkip("Set TEST_RUNNER_SITEIO_DEV_URL to run against an agent")
+        }
+        let configuration = WKWebViewConfiguration()
+        configuration.websiteDataStore = .nonPersistent()
+        installBridge(in: configuration.userContentController, handler: BridgeHandler(adminURL: url) { _ in })
+        let webView = CompanionWebView(frame: NSRect(x: 0, y: 0, width: 1100, height: 760), configuration: configuration)
+        let loaded = expectation(description: "loaded")
+        let delegate = Loaded(loaded)
+        webView.navigationDelegate = delegate
+        webView.load(URLRequest(url: url))
+        await fulfillment(of: [loaded], timeout: 15)
+        // Alpine and the page's first fetches.
+        try await Task.sleep(for: .seconds(2))
+
+        let present = try await webView.evaluateJavaScript("window.siteioCompanion && window.siteioCompanion.present === true") as? Bool
+        XCTAssertEqual(present, true)
+        let app = try await webView.evaluateJavaScript("document.documentElement.classList.contains('app')") as? Bool
+        XCTAssertEqual(app, true)
+        let frozen = try await webView.evaluateJavaScript("(() => { try { window.siteioCompanion.present = false } catch (e) {} ; return window.siteioCompanion.present })()") as? Bool
+        XCTAssertEqual(frozen, true)
+
+        // A picture of the page as the window shows it, in the (sandboxed) temporary directory.
+        let image = try await webView.takeSnapshot(configuration: nil)
+        let rep = try XCTUnwrap(image.tiffRepresentation.flatMap(NSBitmapImageRep.init(data:)))
+        let out = FileManager.default.temporaryDirectory.appendingPathComponent("siteio-admin-in-app.png")
+        try XCTUnwrap(rep.representation(using: .png, properties: [:])).write(to: out)
+        print("snapshot: \(out.path)")
+    }
+}
