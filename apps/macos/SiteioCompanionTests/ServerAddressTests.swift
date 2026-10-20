@@ -1,5 +1,5 @@
 import XCTest
-@testable import siteio
+@testable import siteio_Companion
 
 final class ServerAddressTests: XCTestCase {
     private func url(_ input: String, local: Bool = false) -> String? {

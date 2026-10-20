@@ -1,5 +1,5 @@
 import XCTest
-@testable import siteio
+@testable import siteio_Companion
 
 @MainActor final class AppModelTests: XCTestCase {
     private var defaults: UserDefaults!

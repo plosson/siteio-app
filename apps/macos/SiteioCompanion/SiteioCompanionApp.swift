@@ -1,18 +1,23 @@
 import AppKit
+import HoulahopUpdater
 import SwiftUI
 
 @main
 struct SiteioCompanionApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    @StateObject private var updater = Updater()
 
     var body: some Scene {
-        Window("siteio", id: "main") {
+        Window("siteio Companion", id: "main") {
             RootView(model: appDelegate.model)
         }
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentMinSize)
         .defaultSize(width: 1100, height: 760)
-        .commands { ServerCommands(model: appDelegate.model) }
+        .commands {
+            ServerCommands(model: appDelegate.model)
+            CommandGroup(after: .appInfo) { CheckForUpdatesButton(updater: updater) }
+        }
     }
 }
 
