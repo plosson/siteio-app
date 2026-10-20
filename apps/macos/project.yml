@@ -9,19 +9,27 @@ settings:
   base:
     SWIFT_VERSION: "6.0"
     MACOSX_DEPLOYMENT_TARGET: "14.0"
-    # Ad-hoc ("Sign to Run Locally") for local builds.
+    # Ad-hoc ("Sign to Run Locally") for local builds; scripts/release.sh signs Release with Developer ID.
     CODE_SIGN_IDENTITY: "-"
     CODE_SIGN_STYLE: Manual
     ENABLE_USER_SCRIPT_SANDBOXING: YES
+  configs:
+    Release:
+      CODE_SIGN_IDENTITY: Developer ID Application
+packages:
+  HoulahopUpdater:
+    path: ../../scripts/mac-release
 targets:
   SiteioCompanion:
     type: application
     platform: macOS
     sources: [SiteioCompanion]
+    dependencies:
+      - package: HoulahopUpdater
     info:
       path: SiteioCompanion/Info.plist
       properties:
-        CFBundleDisplayName: siteio
+        CFBundleDisplayName: siteio Companion
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSApplicationCategoryType: public.app-category.developer-tools
@@ -29,16 +37,19 @@ targets:
         NSAppTransportSecurity:
           # Dev agents on http://127.0.0.1 / localhost (Debug builds only accept them).
           NSAllowsLocalNetworking: true
+        # Sparkle: scripts/release.sh uploads appcast.xml to each GitHub release, so "latest" always points to the newest one.
+        SUFeedURL: https://github.com/plosson/siteio-app/releases/latest/download/appcast.xml
+        SUPublicEDKey: w8N1Qyd4RwZm51go+WnxVEWoGvSs546P/t7jbUlDPKA=
+        SUEnableAutomaticChecks: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.plosson.siteio-companion
-        PRODUCT_NAME: siteio
+        PRODUCT_NAME: siteio Companion
         MARKETING_VERSION: 0.1.0
         CURRENT_PROJECT_VERSION: 1
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        # No App Sandbox, as AgentIO Companion: Sparkle installs updates in place.
         ENABLE_HARDENED_RUNTIME: YES
-        ENABLE_APP_SANDBOX: YES
-        ENABLE_OUTGOING_NETWORK_CONNECTIONS: YES
   SiteioCompanionTests:
     type: bundle.unit-test
     platform: macOS
@@ -48,8 +59,8 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
-        # The app's product is "siteio", not the target's name.
-        TEST_HOST: $(BUILT_PRODUCTS_DIR)/siteio.app/Contents/MacOS/siteio
+        # The app's product is "siteio Companion", not the target's name.
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/siteio Companion.app/Contents/MacOS/siteio Companion"
         BUNDLE_LOADER: $(TEST_HOST)
 schemes:
   SiteioCompanion:
