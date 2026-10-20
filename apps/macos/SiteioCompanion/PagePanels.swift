@@ -4,9 +4,11 @@ import AppKit
 /// of them unless the app does, and a `confirm()` it does not show answers Cancel: the admin's
 /// Remove buttons ask first, so without these they did nothing.
 @MainActor struct PagePanels {
-    var alert: (String, NSWindow?) async -> Void
-    var confirm: (String, NSWindow?) async -> Bool
-    var prompt: (String, String?, NSWindow?) async -> String?
+    // @MainActor on the types, not only on the struct: an async closure of a plain type runs on
+    // Swift's background pool, and AppKit raises (and the app aborts) when NSAlert builds its window there.
+    var alert: @MainActor (String, NSWindow?) async -> Void
+    var confirm: @MainActor (String, NSWindow?) async -> Bool
+    var prompt: @MainActor (String, String?, NSWindow?) async -> String?
 
     static let sheets = PagePanels(
         alert: { message, window in
