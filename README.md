@@ -1,10 +1,10 @@
-# siteio Companion
+# SiteIO
 
-Native macOS app (Swift, SwiftUI) for a [siteio](https://github.com/plosson/siteio) server: one window that shows the server's admin page (`https://api.<domain>/ui`), as AgentIO Companion does for an agentio hub.
+Native macOS app (Swift, SwiftUI) for a [siteio](https://github.com/plosson/siteio) server: one window that shows the server's admin page (`https://api.<domain>/ui`), as the AgentIO app does for an agentio hub.
 
 ## Install
 
-Open `siteio-Companion-<version>.pkg` from the [latest release](https://github.com/plosson/siteio-app/releases/latest), or `brew install --cask plosson/tap/siteio-companion`. The app updates itself (Sparkle); **siteio Companion ▸ Check for Updates…** checks now.
+Open `SiteIO-<version>.pkg` from the [latest release](https://github.com/plosson/siteio-app/releases/latest), or `brew install --cask plosson/tap/siteio-companion`. The app updates itself (Sparkle); **SiteIO ▸ Check for Updates…** checks now.
 
 The admin page is the server's own: new siteio features need no app update. You sign in on that page (username and password, or the API key); the session cookie is kept between launches.
 
@@ -15,7 +15,7 @@ cd apps/macos
 xcodegen generate                       # creates SiteioCompanion.xcodeproj (not committed)
 xcodebuild -scheme SiteioCompanion -destination 'platform=macOS' -derivedDataPath build test
 xcodebuild -scheme SiteioCompanion -configuration Debug -derivedDataPath build build
-open "build/Build/Products/Debug/siteio Companion.app"
+open build/Build/Products/Debug/SiteIO.app
 ```
 
 Requirements: macOS 14 or later, Xcode 26, XcodeGen (`brew install xcodegen`), and a siteio agent 1.50.0 or later (the version whose admin page knows the bridge).
@@ -29,7 +29,7 @@ TEST_RUNNER_SITEIO_DEV_URL="http://127.0.0.1:3000/ui?key=<api key>" xcodebuild -
 ## Release
 
 ```bash
-git submodule update --init                     # scripts/mac-release (houlahop-mac-release), shared with AgentIO Companion
+git submodule update --init                     # scripts/mac-release (houlahop-mac-release), shared with the AgentIO app
 DEVELOPMENT_TEAM=427N276E3Q scripts/release.sh 0.1.0
 ```
 

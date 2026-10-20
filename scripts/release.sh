@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds, signs, notarizes and publishes siteio Companion to GitHub Releases (pkg, zip and Sparkle appcast), then
+# Builds, signs, notarizes and publishes SiteIO to GitHub Releases (pkg, zip and Sparkle appcast), then
 # updates its Homebrew cask. The steps live in the houlahop-mac-release submodule: see scripts/mac-release/lib.sh
 # for what they need.
 # Usage: DEVELOPMENT_TEAM=XXXXXXXXXX scripts/release.sh 0.1.0
@@ -14,8 +14,8 @@ release_version "${1:-}"
 : "${DEVELOPMENT_TEAM:?set DEVELOPMENT_TEAM to your Apple team ID}"
 TEAM="$DEVELOPMENT_TEAM"
 MACOS="$ROOT/apps/macos"
-NAME="siteio Companion"
-FILE_NAME="siteio-Companion-$VERSION"
+NAME="SiteIO"
+FILE_NAME="SiteIO-$VERSION"
 REPO="plosson/siteio-app"
 BUNDLE_ID="com.plosson.siteio-companion"
 PROJECT="$MACOS/SiteioCompanion.xcodeproj"

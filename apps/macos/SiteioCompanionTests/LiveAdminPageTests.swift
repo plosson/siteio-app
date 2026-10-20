@@ -1,7 +1,7 @@
 import AppKit
 import WebKit
 import XCTest
-@testable import siteio_Companion
+@testable import SiteIO
 
 /// Against a running siteio agent, opt in: `TEST_RUNNER_SITEIO_DEV_URL=http://127.0.0.1:3000/ui?key=<api key>`
 /// (xcodebuild passes `TEST_RUNNER_*` to the tests). Skipped otherwise.

@@ -8,7 +8,7 @@ struct SiteioCompanionApp: App {
     @StateObject private var updater = Updater()
 
     var body: some Scene {
-        Window("siteio Companion", id: "main") {
+        Window("SiteIO", id: "main") {
             RootView(model: appDelegate.model)
         }
         .windowStyle(.hiddenTitleBar)
@@ -29,6 +29,17 @@ struct SiteioCompanionApp: App {
         AppModel(allowLocalHTTP: false)
         #endif
     }()
+
+    /// Before any window: drop the old "siteio Companion.app" name, and start again from the new one if this copy moved.
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        guard case .renamed(let app) = OldAppName.tidy(bundle: Bundle.main.bundleURL,
+                                                       bundleID: Bundle.main.bundleIdentifier ?? "") else { return }
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.createsNewApplicationInstance = true
+        NSWorkspace.shared.openApplication(at: app, configuration: configuration) { _, _ in
+            DispatchQueue.main.async { NSApp.terminate(nil) }
+        }
+    }
 
     /// One window: closing it quits, like System Settings.
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }

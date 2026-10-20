@@ -1,5 +1,5 @@
 import XCTest
-@testable import siteio_Companion
+@testable import SiteIO
 
 final class BridgeTests: XCTestCase {
     private let admin = Origin(url: URL(string: "https://api.example.com/ui")!)
