@@ -8,6 +8,14 @@ Open `SiteIO-<version>.pkg` from the [latest release](https://github.com/plosson
 
 The admin page is the server's own: new siteio features need no app update. You sign in on that page (username and password, or the API key); the session cookie is kept between launches.
 
+## Servers
+
+The app holds several servers. **Server ▸** (or the footer's **Switch Server…**) lists them with ⌘1…⌘9; **Add Server…** (⇧⌘N) adds one by its domain, and you sign in on its page.
+
+The servers the siteio CLI is logged in to are there too, already signed in: the app reads `~/.config/siteio/config.json` (written by `siteio login`) and opens each one's admin page with its key, as `siteio ui` does. The app never stores those keys, and reads the file again each time you come back to it. `siteio logout` removes a server from the list; **Remove** only removes the ones added in the app.
+
+The footer shows the server, and the siteio it runs (from its `/health`) against siteio's latest release.
+
 ## Build, test and run
 
 ```bash
@@ -39,7 +47,8 @@ Tests, then a Developer ID build, notarized and stapled, as a pkg and a zip, wit
 
 | What | Where |
 |------|-------|
-| Remembered server | `defaults read com.plosson.siteio-companion serverURL` |
+| Servers added in the app, and the one shown | `defaults read com.plosson.siteio-companion servers` / `selectedServer` |
+| The CLI's servers and keys | `~/.config/siteio/config.json`, read only |
 | Session cookie | WebKit's default data store (`~/Library/WebKit/com.plosson.siteio-companion`) |
 
 ## Bridge

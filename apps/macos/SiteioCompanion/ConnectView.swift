@@ -19,7 +19,7 @@ struct ConnectView: View {
                 .font(.system(size: 20, weight: .bold))
                 .foregroundStyle(Theme.fg)
                 .padding(.top, 14)
-            Text("Enter your server's domain. You sign in on its admin page.")
+            Text(verbatim: "Enter your server's domain. You sign in on its admin page. Servers you log in to with the siteio CLI are here already.")
                 .font(.system(size: 13))
                 .foregroundStyle(Theme.muted)
                 .multilineTextAlignment(.center)
@@ -43,7 +43,14 @@ struct ConnectView: View {
                 Button("Connect", action: connect)
                     .buttonStyle(PrimaryButtonStyle())
                     .keyboardShortcut(.defaultAction)
-                .padding(.top, 10)
+                    .padding(.top, 10)
+                if model.selected != nil {
+                    Button("Cancel") { model.cancelAdding() }
+                        .buttonStyle(.link)
+                        .keyboardShortcut(.cancelAction)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 4)
+                }
             }
             .padding(24)
             .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
