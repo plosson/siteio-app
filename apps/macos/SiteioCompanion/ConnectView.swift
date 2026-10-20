@@ -40,12 +40,9 @@ struct ConnectView: View {
                 Text(verbatim: invalid ? "Enter a domain, such as example.com or https://api.example.com." : "The admin is at https://api.<domain>/ui.")
                     .font(.system(size: 11.5, weight: invalid ? .semibold : .regular))
                     .foregroundStyle(invalid ? Theme.bad : Theme.muted)
-                Button(action: connect) {
-                    Text("Connect").frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .keyboardShortcut(.defaultAction)
+                Button("Connect", action: connect)
+                    .buttonStyle(PrimaryButtonStyle())
+                    .keyboardShortcut(.defaultAction)
                 .padding(.top, 10)
             }
             .padding(24)
@@ -63,5 +60,18 @@ struct ConnectView: View {
 
     private func connect() {
         invalid = !model.connect(to: address)
+    }
+}
+
+/// The admin page's primary button (`.button.primary`): the system blue in an active or inactive
+/// window alike. The bordered prominent style turns white in an inactive window, on a white card.
+private struct PrimaryButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.system(size: 13, weight: .medium))
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity, minHeight: 28)
+            .background(Theme.link.opacity(configuration.isPressed ? 0.8 : 1), in: RoundedRectangle(cornerRadius: 6))
+            .contentShape(RoundedRectangle(cornerRadius: 6))
     }
 }

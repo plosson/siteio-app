@@ -37,5 +37,5 @@ import Observation
     func reload() { reloadToken = UUID() }
 
     /// The window's title: the server's host, for the Window menu and Mission Control.
-    var windowTitle: String { adminURL?.host ?? "siteio" }
+    var windowTitle: String { adminURL?.host.map { "SiteIO — \($0)" } ?? "SiteIO" }
 }

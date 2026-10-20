@@ -29,7 +29,7 @@ targets:
     info:
       path: SiteioCompanion/Info.plist
       properties:
-        CFBundleDisplayName: siteio Companion
+        CFBundleDisplayName: SiteIO
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSApplicationCategoryType: public.app-category.developer-tools
@@ -44,11 +44,11 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.plosson.siteio-companion
-        PRODUCT_NAME: siteio Companion
+        PRODUCT_NAME: SiteIO
         MARKETING_VERSION: 0.1.0
         CURRENT_PROJECT_VERSION: 1
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        # No App Sandbox, as AgentIO Companion: Sparkle installs updates in place.
+        # No App Sandbox, as AgentIO: Sparkle installs updates in place.
         ENABLE_HARDENED_RUNTIME: YES
   SiteioCompanionTests:
     type: bundle.unit-test
@@ -59,8 +59,8 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
-        # The app's product is "siteio Companion", not the target's name.
-        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/siteio Companion.app/Contents/MacOS/siteio Companion"
+        # The app's product is "SiteIO", not the target's name.
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/SiteIO.app/Contents/MacOS/SiteIO
         BUNDLE_LOADER: $(TEST_HOST)
 schemes:
   SiteioCompanion:

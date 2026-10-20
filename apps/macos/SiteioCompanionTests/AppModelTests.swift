@@ -1,5 +1,5 @@
 import XCTest
-@testable import siteio_Companion
+@testable import SiteIO
 
 @MainActor final class AppModelTests: XCTestCase {
     private var defaults: UserDefaults!
@@ -36,7 +36,7 @@ import XCTest
         model.switchServer()
         XCTAssertNil(model.adminURL)
         XCTAssertNil(AppModel(defaults: defaults, allowLocalHTTP: false).adminURL)
-        XCTAssertEqual(model.windowTitle, "siteio")
+        XCTAssertEqual(model.windowTitle, "SiteIO")
     }
 
     func testReloadChangesTheTokenEveryTime() {
