@@ -48,8 +48,28 @@ struct AdminWebView: NSViewRepresentable {
         let adminOrigin: Origin?
         var reloadToken: UUID?
         weak var webView: CompanionWebView?
+        /// How the page's alert(), confirm() and prompt() are answered; sheets, unless a test says otherwise.
+        let panels: PagePanels
 
-        init(adminURL: URL) { adminOrigin = Origin(url: adminURL) }
+        init(adminURL: URL, panels: PagePanels = .sheets) {
+            adminOrigin = Origin(url: adminURL)
+            self.panels = panels
+        }
+
+        func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String,
+                     initiatedByFrame frame: WKFrameInfo) async {
+            await panels.alert(message, webView.window)
+        }
+
+        func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String,
+                     initiatedByFrame frame: WKFrameInfo) async -> Bool {
+            await panels.confirm(message, webView.window)
+        }
+
+        func webView(_ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String,
+                     defaultText: String?, initiatedByFrame frame: WKFrameInfo) async -> String? {
+            await panels.prompt(prompt, defaultText, webView.window)
+        }
 
         /// window.open and target="_blank": http(s) links open in the browser.
         func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration,

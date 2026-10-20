@@ -56,4 +56,49 @@ import XCTest
         try XCTUnwrap(rep.representation(using: .png, properties: [:])).write(to: out)
         print("snapshot: \(out.path)")
     }
+
+    /// The site page's Remove asks with confirm(): Cancel keeps the site, OK removes it.
+    /// Opt in with `TEST_RUNNER_SITEIO_DEV_REMOVE_SITE=<a site you can lose>` as well.
+    func testRemoveAsksAndOnlyRemovesWhenConfirmed() async throws {
+        let env = ProcessInfo.processInfo.environment
+        guard let raw = env["SITEIO_DEV_URL"], let url = URL(string: raw), let site = env["SITEIO_DEV_REMOVE_SITE"] else {
+            throw XCTSkip("Set TEST_RUNNER_SITEIO_DEV_URL and TEST_RUNNER_SITEIO_DEV_REMOVE_SITE to run against an agent")
+        }
+        var answer = false
+        var asked: [String] = []
+        let panels = PagePanels(alert: { _, _ in },
+                                confirm: { message, _ in asked.append(message); return answer },
+                                prompt: { _, _, _ in nil })
+        let coordinator = AdminWebView.Coordinator(adminURL: url, panels: panels)
+        let configuration = WKWebViewConfiguration()
+        configuration.websiteDataStore = .nonPersistent()
+        let webView = CompanionWebView(frame: NSRect(x: 0, y: 0, width: 1100, height: 760), configuration: configuration)
+        webView.uiDelegate = coordinator
+        let loaded = Loaded(expectation(description: "loaded"))
+        webView.navigationDelegate = loaded
+        var components = URLComponents(url: url, resolvingAgainstBaseURL: false)!
+        components.fragment = "/sites/\(site)"
+        webView.load(URLRequest(url: components.url!))
+        await fulfillment(of: [loaded.done], timeout: 15)
+        try await Task.sleep(for: .seconds(2))
+
+        let remove = "document.querySelector('.pane-head .button.danger').click(); 1"
+        let exists = "fetch('/sites/' + encodeURIComponent('\(site)'), { headers: { 'X-API-Key': sessionStorage.getItem('siteio_api_key') } }).then(r => r.status)"
+        _ = try await webView.evaluateJavaScript(remove)
+        try await Task.sleep(for: .seconds(1))
+        XCTAssertEqual(asked.count, 1)
+        XCTAssertTrue(asked.first?.contains("Remove site '\(site)'") == true, "\(asked)")
+        let value1 = try await webView.callAsyncJavaScript("return await \(exists)", contentWorld: .page) as? Int
+        XCTAssertEqual(value1, 200, "Cancel keeps the site")
+
+        answer = true
+        _ = try await webView.evaluateJavaScript(remove)
+        try await Task.sleep(for: .seconds(3))
+        XCTAssertEqual(asked.count, 2)
+        let value2 = try await webView.evaluateJavaScript("location.hash") as? String
+        XCTAssertEqual(value2, "#/services")
+        let value3 = try await webView.callAsyncJavaScript("return await \(exists)", contentWorld: .page) as? Int
+        XCTAssertEqual(value3, 404, "OK removes it")
+        withExtendedLifetime((coordinator, loaded)) {}
+    }
 }
